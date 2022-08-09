@@ -34,12 +34,12 @@ def flattenedProject = new XmlSlurper().parse( flattenedPom )
 // direct dependency), core declares dep as compile-scope (default) dependency.
 assert 2 ==  flattenedProject.dependencies.dependency.size()
 
-assert "core" ==  originalProject.dependencies.dependency[0].artifactId.text()
-assert "3.2.1" ==  originalProject.dependencies.dependency[0].version.text()
-assert "compile" ==  originalProject.dependencies.dependency[0].scope.text()
+assert "core" ==  flattenedProject.dependencies.dependency[0].artifactId.text()
+assert "3.2.1" ==  flattenedProject.dependencies.dependency[0].version.text()
+assert "compile" ==  flattenedProject.dependencies.dependency[0].scope.text()
 
 // The flattened pom.xml should declare the dep under core as compile scope.
 // It's ok to ignore the one in the test-scope dependency.
-assert "dep" ==  originalProject.dependencies.dependency[1].artifactId.text()
-assert "3.2.1" ==  originalProject.dependencies.dependency[1].version.text()
-assert "compile" ==  originalProject.dependencies.dependency[1].scope.text()
+assert "dep" ==  flattenedProject.dependencies.dependency[1].artifactId.text()
+assert "3.2.1" ==  flattenedProject.dependencies.dependency[1].version.text()
+assert "compile" ==  flattenedProject.dependencies.dependency[1].scope.text()
