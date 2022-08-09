@@ -1089,6 +1089,16 @@ public class FlattenMojo
         final Queue<DependencyNode> dependencyNodeLinkedList = new LinkedList<>();
         final Set<String> processedDependencies = new HashSet<>();
 
+        final Set<String> testScopeProjectDependencies = new HashSet<>();
+        for (Dependency projectDependency : projectDependencies)
+        {
+            if ("test".equals(projectDependency.getScope()))
+            {
+                String managementKey = projectDependency.getManagementKey();
+                testScopeProjectDependencies.add(managementKey);
+            }
+        }
+
         final Artifact projectArtifact = this.project.getArtifact();
 
         final DependencyNode dependencyNode = this.dependencyTreeBuilder.buildDependencyTree(this.project,
@@ -1112,7 +1122,26 @@ public class FlattenMojo
                 }
                 if (node.getState() != DependencyNode.INCLUDED)
                 {
-                    return false;
+                    if (node.getState() == DependencyNode.OMITTED_FOR_DUPLICATE)
+                    {
+                        Artifact artifact = node.getArtifact();
+                        // The same format as org.apache.maven.model.Dependency.getManagementKey()
+                        String managementKey = artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getType()
+                            + (artifact.getClassifier() != null ? ":" + artifact.getClassifier() : "");
+                        if (testScopeProjectDependencies.contains(managementKey))
+                        {
+                            // The tree should not omit this node, because the project dependency which supersedes this node
+                            // will be removed due to its test-scope.
+                            dependencyNodeLinkedList.add(node);
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    } else {
+                        return false;
+                    }
                 }
                 if (node.getArtifact().isOptional())
                 {
